@@ -58,6 +58,12 @@ public final class ViewfinderView extends View {
     private int scannerAlpha;
     private List<ResultPoint> possibleResultPoints;
     private List<ResultPoint> lastPossibleResultPoints;
+    private boolean isFirst;
+
+    /**
+     * 中间滑动线的最顶端位置
+     */
+    private int slideTop;
 
     // This constructor is used when the class is built from an XML resource.
     public ViewfinderView(Context context, AttributeSet attrs) {
@@ -68,7 +74,8 @@ public final class ViewfinderView extends View {
         Resources resources = getResources();
         maskColor = resources.getColor(R.color.viewfinder_mask);
         resultColor = resources.getColor(R.color.result_view);
-        laserColor = resources.getColor(R.color.viewfinder_laser);
+//        laserColor = resources.getColor(R.color.viewfinder_laser);
+        laserColor = ContextCompat.getColor(getContext(), android.R.color.holo_green_dark);
         resultPointColor = resources.getColor(R.color.possible_result_points);
         scannerAlpha = 0;
         possibleResultPoints = new ArrayList<>(5);
@@ -93,28 +100,17 @@ public final class ViewfinderView extends View {
         int width = canvas.getWidth();
         int height = canvas.getHeight();
 
+        if (!isFirst) {
+            isFirst = true;
+            slideTop = frame.top;
+        }
+
 //    // Draw the exterior (i.e. outside the framing rect) darkened
         paint.setColor(resultBitmap != null ? resultColor : maskColor);
         canvas.drawRect(0, 0, width, frame.top, paint);
         canvas.drawRect(0, frame.top, frame.left, frame.bottom + 1, paint);
         canvas.drawRect(frame.right + 1, frame.top, width, frame.bottom + 1, paint);
         canvas.drawRect(0, frame.bottom + 1, width, height, paint);
-        //画出四个角
-
-        paint.setColor(ContextCompat.getColor(getContext(), android.R.color.holo_green_dark));
-
-        //左上角
-        canvas.drawRect(frame.left, frame.top, frame.left + 30, frame.top + 5, paint);
-        canvas.drawRect(frame.left, frame.top, frame.left + 5, frame.top + 30, paint);
-//右上角
-        canvas.drawRect(frame.right - 30, frame.top, frame.right, frame.top + 5, paint);
-        canvas.drawRect(frame.right - 5, frame.top, frame.right, frame.top + 30, paint);
-//左下角
-        canvas.drawRect(frame.left, frame.bottom - 5, frame.left + 30, frame.bottom, paint);
-        canvas.drawRect(frame.left, frame.bottom - 30, frame.left + 5, frame.bottom, paint);
-//右下角
-        canvas.drawRect(frame.right - 30, frame.bottom - 5, frame.right, frame.bottom, paint);
-        canvas.drawRect(frame.right - 5, frame.bottom - 30, frame.right, frame.bottom, paint);
 
         if (resultBitmap != null) {
             // Draw the opaque result bitmap over the scanning rectangle
@@ -122,13 +118,27 @@ public final class ViewfinderView extends View {
             canvas.drawBitmap(resultBitmap, null, frame, paint);
         } else {
 
-            // Draw a red "laser scanner" line through the middle to show decoding is active
-            paint.setColor(laserColor);
-            paint.setAlpha(SCANNER_ALPHA[scannerAlpha]);
-            scannerAlpha = (scannerAlpha + 1) % SCANNER_ALPHA.length;
-            int middle = frame.height() / 2 + frame.top;
-            canvas.drawRect(frame.left + 2, middle - 1, frame.right - 1, middle + 2, paint);
+            //画出四个角
+            paint.setColor(ContextCompat.getColor(getContext(), android.R.color.holo_green_dark));
+            //左上角
+            canvas.drawRect(frame.left, frame.top, frame.left + 50, frame.top + 10, paint);
+            canvas.drawRect(frame.left, frame.top, frame.left + 10, frame.top + 50, paint);
+            //右上角
+            canvas.drawRect(frame.right - 50, frame.top, frame.right, frame.top + 10, paint);
+            canvas.drawRect(frame.right - 10, frame.top, frame.right, frame.top + 50, paint);
+            //左下角
+            canvas.drawRect(frame.left, frame.bottom - 10, frame.left + 50, frame.bottom, paint);
+            canvas.drawRect(frame.left, frame.bottom - 50, frame.left + 10, frame.bottom, paint);
+            //右下角
+            canvas.drawRect(frame.right - 50, frame.bottom - 10, frame.right, frame.bottom, paint);
+            canvas.drawRect(frame.right - 10, frame.bottom - 50, frame.right, frame.bottom, paint);
 
+            //绘制中间的线,每次刷新界面，中间的线往下移动SPEEN_DISTANCE
+            slideTop += 5;
+            if (slideTop >= frame.bottom) {
+                slideTop = frame.top;
+            }
+            canvas.drawRect(frame.left + 5, slideTop - 6 / 2, frame.right - 5, slideTop + 6 / 2, paint);
             float scaleX = frame.width() / (float) previewFrame.width();
             float scaleY = frame.height() / (float) previewFrame.height();
 

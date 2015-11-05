@@ -19,7 +19,6 @@ package me.test.zxing;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,7 +27,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -104,12 +102,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         viewfinderView.setCameraManager(cameraManager);
 
         handler = null;
-
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
-
-        resetStatusView();
-
 
         beepManager.updatePrefs();
         ambientLightManager.start(cameraManager);
@@ -226,6 +218,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     public void handleDecode(Result rawResult, Bundle bundle) {
         inactivityTimer.onActivity();
         beepManager.playBeepSoundAndVibrate();
+        bundle.putString("result", rawResult.getText());
         startActivity(new Intent(this,Main2Activity.class).putExtras(bundle));
     }
 
@@ -262,10 +255,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         builder.setPositiveButton(R.string.button_ok, new FinishListener(this));
         builder.setOnCancelListener(new FinishListener(this));
         builder.show();
-    }
-
-    private void resetStatusView() {
-        viewfinderView.setVisibility(View.VISIBLE);
     }
 
     public void drawViewfinder() {
