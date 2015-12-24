@@ -42,7 +42,6 @@ final class CameraConfigurationManager {
     private Point screenResolution;
     // 相机分辨率
     private Point cameraResolution;
-    private Point bestPreviewSize;
 
     CameraConfigurationManager(Context context) {
         this.context = context;
@@ -81,8 +80,6 @@ final class CameraConfigurationManager {
         Log.i(TAG, "Screen resolution in current orientation: " + screenResolution);
         cameraResolution = CameraConfigurationUtils.findBestPreviewSizeValue(parameters, screenResolutionForCamera);
         Log.i(TAG, "Camera resolution: " + cameraResolution);
-        bestPreviewSize = CameraConfigurationUtils.findBestPreviewSizeValue(parameters, screenResolutionForCamera);
-        Log.i(TAG, "Best available preview size: " + bestPreviewSize);
     }
 
     void setDesiredCameraParameters(OpenCamera camera, boolean safeMode) {
@@ -111,7 +108,7 @@ final class CameraConfigurationManager {
                 true,
                 safeMode);
 
-        parameters.setPreviewSize(bestPreviewSize.x, bestPreviewSize.y);
+        parameters.setPreviewSize(cameraResolution.x, cameraResolution.y);
 
         theCamera.setParameters(parameters);
 
@@ -119,11 +116,11 @@ final class CameraConfigurationManager {
 
         Camera.Parameters afterParameters = theCamera.getParameters();
         Camera.Size afterSize = afterParameters.getPreviewSize();
-        if (afterSize != null && (bestPreviewSize.x != afterSize.width || bestPreviewSize.y != afterSize.height)) {
-            Log.w(TAG, "Camera said it supported preview size " + bestPreviewSize.x + 'x' + bestPreviewSize.y +
+        if (afterSize != null && (cameraResolution.x != afterSize.width || cameraResolution.y != afterSize.height)) {
+            Log.w(TAG, "Camera said it supported preview size " + cameraResolution.x + 'x' + cameraResolution.y +
                     ", but after setting it, preview size is " + afterSize.width + 'x' + afterSize.height);
-            bestPreviewSize.x = afterSize.width;
-            bestPreviewSize.y = afterSize.height;
+            cameraResolution.x = afterSize.width;
+            cameraResolution.y = afterSize.height;
         }
     }
 
