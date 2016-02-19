@@ -13,7 +13,5 @@ public class Main2Activity extends Activity {
 
         setContentView(R.layout.activity_main2);
         TextView tv = (TextView) findViewById(R.id.abc);
-
-        tv.setText(getIntent().getStringExtra("result"));
     }
 }
